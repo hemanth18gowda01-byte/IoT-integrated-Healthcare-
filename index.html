@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050d1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>VitalSync</title>
+  <link rel="manifest" href="public/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <script>window.VITALSYNC_API_URL = 'http://localhost:8000';</script>
+  <style>
+    /* ═══════════════════════════════════════════════════════
+       VITALSYNC — CLINICAL DARK AESTHETIC
+       Deep navy + electric cyan + biometric red
+       Monospace data, geometric UI, medical precision
+    ═══════════════════════════════════════════════════════ */
+    :root {
+      --bg:        #050d1a;
+      --bg-card:   #0a1628;
+      --bg-glass:  rgba(10, 22, 40, 0.85);
+      --border:    rgba(0, 229, 255, 0.12);
+      --border-hi: rgba(0, 229, 255, 0.35);
+      --cyan:      #00e5ff;
+      --cyan-dim:  rgba(0, 229, 255, 0.15);
+      --cyan-glow: rgba(0, 229, 255, 0.4);
+      --red:       #ff3366;
+      --red-dim:   rgba(255, 51, 102, 0.15);
+      --green:     #00ff87;
+      --green-dim: rgba(0, 255, 135, 0.12);
+      --yellow:    #ffd93d;
+      --text:      #e8f4f8;
+      --text-dim:  #5a7a8a;
+      --text-mid:  #8aaabb;
+      --mono:      'Space Mono', monospace;
+      --display:   'Syne', sans-serif;
+      --radius:    12px;
+      --safe-top:  env(safe-area-inset-top, 0px);
+      --safe-bot:  env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--display);
+      overflow: hidden;
+    }
+
+    /* ── App Shell ── */
+    #app {
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Pages ── */
+    .page { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .page.active { display: flex; flex-direction: column; }
+
+    /* ── Auth Screen ── */
+    #page-auth {
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 60%),
+                  var(--bg);
+      padding: 40px 24px 24px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .auth-logo .pulse-ring {
+      width: 80px; height: 80px;
+      border: 2px solid var(--cyan);
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      position: relative;
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
+    .auth-logo .pulse-ring::after {
+      content: '🫀';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 28px;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 0 var(--cyan-glow); }
+      50% { box-shadow: 0 0 0 16px transparent; }
+    }
+    .auth-logo h1 {
+      font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--cyan), #00b4d8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .auth-logo p { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+
+    .auth-tabs {
+      display: flex; gap: 0; border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      margin-bottom: 24px; width: 100%;
+    }
+    .auth-tab {
+      flex: 1; padding: 10px; text-align: center;
+      font-family: var(--display); font-size: 13px; font-weight: 600;
+      background: transparent; border: none; color: var(--text-dim);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .auth-tab.active { background: var(--cyan-dim); color: var(--cyan); }
+
+    .auth-form { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); }
+    .form-group input, .form-group select {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 11px 14px;
+      color: var(--text); font-size: 14px; font-family: var(--display);
+      outline: none; transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--cyan); }
+    .form-group select option { background: var(--bg-card); }
+
+    .btn {
+      padding: 13px 20px; border-radius: 10px; border: none;
+      font-family: var(--display); font-weight: 700; font-size: 14px;
+      cursor: pointer; transition: all 0.2s; display: flex;
+      align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), #0099cc);
+      color: #050d1a;
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-danger { background: linear-gradient(135deg, var(--red), #cc0044); color: white; }
+    .btn-ghost { background: var(--bg-card); border: 1px solid var(--border); color: var(--text); }
+    .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 8px; }
+    .btn-block { width: 100%; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Top Bar ── */
+    #topbar {
+      display: none;
+      padding: calc(var(--safe-top) + 12px) 20px 12px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    #topbar.visible { display: flex; align-items: center; justify-content: space-between; }
+    #topbar-title { font-size: 16px; font-weight: 800; color: var(--cyan); }
+    #topbar-right { display: flex; align-items: center; gap: 12px; }
+    .alert-badge {
+      background: var(--red); color: white;
+      border-radius: 10px; font-size: 10px; font-weight: 700;
+      padding: 2px 7px; font-family: var(--mono); min-width: 18px;
+      text-align: center;
+    }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--cyan-dim); border: 1px solid var(--border-hi);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; cursor: pointer;
+    }
+
+    /* ── Bottom Nav ── */
+    #bottomnav {
+      display: none;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 8px 0 calc(var(--safe-bot) + 4px);
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    #bottomnav.visible {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; padding: 6px 4px; cursor: pointer;
+      border: none; background: transparent; color: var(--text-dim);
+      transition: color 0.2s; position: relative;
+    }
+    .nav-item.active { color: var(--cyan); }
+    .nav-item .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-item .nav-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--mono); }
+    .nav-dot {
+      position: absolute; top: 4px; right: 20%;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--red); border: 2px solid var(--bg);
+      display: none;
+    }
+    .nav-dot.visible { display: block; }
+
+    /* ── Dashboard ── */
+    #page-dashboard { padding: 0 0 20px; }
+
+    .vital-hero {
+      background: linear-gradient(170deg, rgba(0,229,255,0.06) 0%, transparent 50%);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 20px 16px;
+    }
+    .vital-hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .vital-hero-top h2 { font-size: 13px; font-weight: 600; color: var(--text-dim); font-family: var(--mono); }
+    .status-badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 10px;
+      font-weight: 700; font-family: var(--mono); text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .status-healthy { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,255,135,0.2); }
+    .status-warning { background: rgba(255,217,61,0.12); color: var(--yellow); border: 1px solid rgba(255,217,61,0.2); }
+    .status-critical { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,51,102,0.2); }
+    .status-emergency { background: var(--red); color: white; animation: blink 0.5s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .vitals-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .vital-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px;
+      position: relative; overflow: hidden;
+    }
+    .vital-card::before {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent, var(--cyan));
+      opacity: 0.5;
+    }
+    .vital-card-label {
+      font-size: 10px; color: var(--text-dim); font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;
+    }
+    .vital-card-value {
+      font-size: 28px; font-weight: 700; font-family: var(--mono);
+      color: var(--text); line-height: 1;
+    }
+    .vital-card-unit { font-size: 11px; color: var(--text-dim); font-family: var(--mono); margin-top: 2px; }
+    .vital-card.alert .vital-card-value { color: var(--red); }
+    .vital-card.warn .vital-card-value { color: var(--yellow); }
+
+    /* ECG Line animation */
+    .ecg-line {
+      height: 40px; width: 100%; overflow: hidden; position: relative;
+      margin: 16px 0 0;
+    }
+    .ecg-svg { width: 200%; animation: ecg-scroll 2s linear infinite; }
+    @keyframes ecg-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* Score Ring */
+    .score-section {
+      display: grid; grid-template-columns: auto 1fr;
+      gap: 16px; padding: 16px 20px; align-items: center;
+    }
+    .score-ring {
+      width: 80px; height: 80px; position: relative;
+      flex-shrink: 0;
+    }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring .score-text {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .score-ring .score-num { font-size: 22px; font-weight: 800; font-family: var(--mono); color: var(--cyan); }
+    .score-ring .score-lbl { font-size: 8px; color: var(--text-dim); font-family: var(--mono); }
+    .score-info h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .score-info p { font-size: 12px; color: var(--text-mid); }
+
+    /* Section headers */
+    .section-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px 10px;
+    }
+    .section-hdr h3 { font-size: 13px; font-weight: 700; color: var(--text-dim); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+    .section-hdr a { font-size: 11px; color: var(--cyan); font-family: var(--mono); text-decoration: none; }
+
+    /* Vital trend chart area */
+    .chart-area { padding: 0 20px 16px; }
+    .chart-container {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; height: 140px;
+      position: relative; overflow: hidden;
+    }
+    canvas.trend-chart { width: 100% !important; height: 100% !important; }
+
+    /* Quick Actions */
+    .quick-actions { padding: 0 20px 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .action-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px;
+      display: flex; flex-direction: column; gap: 8px;
+      cursor: pointer; transition: all 0.2s;
+      text-decoration: none; color: inherit;
+    }
+    .action-card:active { transform: scale(0.97); border-color: var(--border-hi); }
+    .action-card .icon { font-size: 24px; }
+    .action-card .title { font-size: 12px; font-weight: 700; }
+    .action-card .desc { font-size: 11px; color: var(--text-dim); }
+
+    /* ── Alerts Page ── */
+    #page-alerts { padding: 16px 20px; }
+    .alert-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; margin-bottom: 10px;
+      border-left: 3px solid var(--text-dim);
+      animation: slide-in 0.3s ease;
+    }
+    @keyframes slide-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    .alert-item.emergency { border-left-color: var(--red); background: rgba(255,51,102,0.04); }
+    .alert-item.critical { border-left-color: var(--red); }
+    .alert-item.warning { border-left-color: var(--yellow); }
+    .alert-item.healthy { border-left-color: var(--green); }
+    .alert-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+    .alert-type { font-size: 12px; font-weight: 700; font-family: var(--mono); text-transform: uppercase; }
+    .alert-time { font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
+    .alert-msg { font-size: 13px; color: var(--text-mid); }
+
+    /* Emergency Banner */
+    .emergency-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+      background: var(--red); color: white;
+      padding: calc(var(--safe-top) + 16px) 20px 16px;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 8px 32px rgba(255,51,102,0.5);
+    }
+    .emergency-banner.show { transform: translateY(0); }
+    .emergency-banner h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+    .emergency-banner p { font-size: 13px; opacity: 0.9; }
+    .emergency-banner .dismiss { float: right; background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 6px; padding: 6px 12px; font-family: var(--display); font-weight: 700; cursor: pointer; }
+
+    /* ── Hospital Page ── */
+    #page-hospital { padding: 16px 20px; }
+    .search-bar {
+      display: flex; gap: 8px; margin-bottom: 16px;
+    }
+    .search-bar input {
+      flex: 1; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 14px; color: var(--text);
+      font-size: 14px; font-family: var(--display); outline: none;
+    }
+    .search-bar input:focus { border-color: var(--cyan); }
+    .hospital-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; margin-bottom: 12px;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .hospital-card:active { border-color: var(--border-hi); }
+    .hospital-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .hospital-meta { font-size: 12px; color: var(--text-mid); margin-bottom: 10px; }
+    .bed-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+    .bed-item { text-align: center; }
+    .bed-avail { font-size: 16px; font-weight: 700; font-family: var(--mono); color: var(--cyan); }
+    .bed-type { font-size: 9px; color: var(--text-dim); font-family: var(--mono); }
+    .bed-item.no-avail .bed-avail { color: var(--red); }
+
+    /* ── Pharmacy Page ── */
+    #page-pharmacy { padding: 16px 20px; }
+    .tabs { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+    .tab-btn {
+      flex: 1; padding: 10px 6px; text-align: center; font-size: 12px;
+      font-weight: 700; background: transparent; border: none;
+      color: var(--text-dim); cursor: pointer; transition: all 0.2s;
+      font-family: var(--display);
+    }
+    .tab-btn.active { background: var(--cyan-dim); color: var(--cyan); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .blood-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .blood-btn {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 6px; text-align: center;
+      cursor: pointer; transition: all 0.2s; font-family: var(--display);
+    }
+    .blood-btn.selected { border-color: var(--cyan); background: var(--cyan-dim); }
+    .blood-type { font-size: 15px; font-weight: 800; font-family: var(--mono); color: var(--cyan); }
+    .blood-units { font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
+    .result-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; margin-bottom: 10px;
+    }
+    .result-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .result-meta { font-size: 12px; color: var(--text-mid); }
+    .result-price { font-size: 13px; font-family: var(--mono); color: var(--green); margin-top: 4px; }
+
+    /* ── Profile / Settings ── */
+    #page-profile { padding: 20px; }
+    .profile-hdr {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+      padding: 16px; background: var(--bg-card); border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .profile-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--cyan-dim); border: 2px solid var(--cyan);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; flex-shrink: 0;
+    }
+    .profile-name { font-size: 17px; font-weight: 800; }
+    .profile-email { font-size: 12px; color: var(--text-dim); font-family: var(--mono); margin-top: 2px; }
+    .profile-role {
+      font-size: 10px; font-weight: 700; font-family: var(--mono);
+      text-transform: uppercase; padding: 3px 8px; border-radius: 10px;
+      background: var(--cyan-dim); color: var(--cyan); margin-top: 4px; display: inline-block;
+    }
+
+    .settings-section { margin-bottom: 20px; }
+    .settings-section h4 { font-size: 11px; color: var(--text-dim); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .settings-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 6px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .settings-item:active { border-color: var(--border-hi); }
+    .settings-item-left { display: flex; align-items: center; gap: 12px; }
+    .settings-item-icon { font-size: 18px; }
+    .settings-item-title { font-size: 14px; font-weight: 600; }
+    .settings-item-desc { font-size: 12px; color: var(--text-dim); }
+    .settings-arrow { color: var(--text-dim); font-size: 14px; }
+
+    /* ── Check-in Modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(5,13,26,0.9);
+      backdrop-filter: blur(8px); z-index: 200;
+      display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px 20px 0 0; padding: 20px;
+      width: 100%; max-height: 85dvh; overflow-y: auto;
+      transform: translateY(100%); transition: transform 0.3s ease;
+    }
+    .modal-backdrop.open .modal { transform: translateY(0); }
+    .modal-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-hdr h3 { font-size: 17px; font-weight: 800; }
+    .modal-close { background: var(--bg-card); border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; }
+
+    .checkin-q { margin-bottom: 16px; }
+    .checkin-q label { display: block; font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; font-family: var(--mono); }
+    .checkin-q input, .checkin-q select, .checkin-q textarea {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; color: var(--text);
+      font-size: 14px; font-family: var(--display); outline: none;
+    }
+    .checkin-q textarea { resize: vertical; min-height: 60px; }
+    .checkin-q input[type=range] { padding: 6px 0; }
+
+    .slider-row { display: flex; align-items: center; gap: 10px; }
+    .slider-row input[type=range] { flex: 1; accent-color: var(--cyan); }
+    .slider-val { font-family: var(--mono); font-size: 16px; color: var(--cyan); min-width: 24px; text-align: center; }
+
+    /* ── Toast notifications ── */
+    #toast-container {
+      position: fixed; top: calc(var(--safe-top) + 70px);
+      left: 16px; right: 16px; z-index: 300;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 16px;
+      font-size: 13px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      animation: toast-in 0.3s ease;
+      pointer-events: all;
+    }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    .toast.success { border-left: 3px solid var(--green); }
+    .toast.error { border-left: 3px solid var(--red); }
+    .toast.info { border-left: 3px solid var(--cyan); }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      width: 24px; height: 24px; border: 2px solid var(--border);
+      border-top-color: var(--cyan); border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .center { display: flex; align-items: center; justify-content: center; padding: 40px; }
+
+    /* ── Prescription result ── */
+    .rx-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; margin-bottom: 12px;
+    }
+    .rx-warning { background: rgba(255,217,61,0.08); border-color: rgba(255,217,61,0.2); border-radius: 10px; padding: 12px; margin-bottom: 14px; font-size: 12px; color: var(--yellow); }
+    .med-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .med-item:last-child { border-bottom: none; }
+    .med-name { font-size: 14px; font-weight: 700; }
+    .med-dose { font-size: 12px; color: var(--text-mid); font-family: var(--mono); }
+
+    /* ── Family members ── */
+    .family-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .family-left { display: flex; align-items: center; gap: 12px; }
+    .family-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--cyan-dim); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .family-name { font-size: 14px; font-weight: 600; }
+    .family-rel { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+    .family-del { background: var(--red-dim); border: none; color: var(--red); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Utility */
+    .text-cyan { color: var(--cyan); }
+    .text-red { color: var(--red); }
+    .text-green { color: var(--green); }
+    .text-dim { color: var(--text-dim); }
+    .mono { font-family: var(--mono); }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .gap-8 { gap: 8px; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; }
+
+    /* Hospital profile edit page */
+    #page-hospital-mgmt, #page-pharmacy-mgmt { padding: 16px 20px; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- Emergency Banner (fixed) -->
+  <div class="emergency-banner" id="emergency-banner">
+    <button class="dismiss" id="emergency-dismiss">Dismiss</button>
+    <h3 id="emergency-title">🚨 Emergency Detected</h3>
+    <p id="emergency-msg">Emergency condition detected. Please seek medical attention immediately.</p>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-container"></div>
+
+  <!-- Top Bar -->
+  <div id="topbar">
+    <span id="topbar-title">VitalSync</span>
+    <div id="topbar-right">
+      <span class="alert-badge" id="alert-count" style="display:none"></span>
+      <div class="avatar" id="avatar-btn">👤</div>
+    </div>
+  </div>
+
+  <!-- ═══ AUTH PAGE ════════════════════════════════════════════ -->
+  <div class="page active" id="page-auth">
+    <div class="auth-logo">
+      <div class="pulse-ring"></div>
+      <h1>VitalSync</h1>
+      <p>AI-Powered Health Monitoring</p>
+    </div>
+
+    <div class="auth-tabs" id="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-form" id="form-login">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="btn btn-primary btn-block" onclick="doLogin()" id="login-btn">Sign In</button>
+      <p style="text-align:center;font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:8px">
+        Demo: patient@vitalsync.demo / Patient@123
+      </p>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form" id="form-register" style="display:none">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="min. 8 characters" />
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="reg-phone" placeholder="+91-9876543210" />
+      </div>
+      <div class="form-group">
+        <label>Account Type</label>
+        <select id="reg-role">
+          <option value="patient">Patient / User</option>
+          <option value="hospital">Hospital</option>
+          <option value="pharmacy">Pharmacy</option>
+          <option value="blood_bank">Blood Bank</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="doRegister()" id="register-btn">Create Account</button>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD PAGE ════════════════════════════════════════ -->
+  <div class="page" id="page-dashboard">
+    <!-- Vital Hero -->
+    <div class="vital-hero">
+      <div class="vital-hero-top">
+        <h2 id="dash-greeting">LIVE VITALS</h2>
+        <span class="status-badge status-healthy" id="dash-status">HEALTHY</span>
+      </div>
+      <div class="vitals-grid">
+        <div class="vital-card" style="--accent:#ff3366">
+          <div class="vital-card-label">Heart Rate</div>
+          <div class="vital-card-value" id="v-hr">--</div>
+          <div class="vital-card-unit">BPM</div>
+        </div>
+        <div class="vital-card" style="--accent:#00e5ff">
+          <div class="vital-card-label">SpO2</div>
+          <div class="vital-card-value" id="v-spo2">--</div>
+          <div class="vital-card-unit">% OXYGEN</div>
+        </div>
+        <div class="vital-card" style="--accent:#ffd93d">
+          <div class="vital-card-label">Temperature</div>
+          <div class="vital-card-value" id="v-temp">--</div>
+          <div class="vital-card-unit">°C</div>
+        </div>
+        <div class="vital-card" style="--accent:#00ff87">
+          <div class="vital-card-label">Blood Pressure</div>
+          <div class="vital-card-value" id="v-bp">--</div>
+          <div class="vital-card-unit">mmHg SYS/DIA</div>
+        </div>
+      </div>
+
+      <!-- ECG Line -->
+      <div class="ecg-line" id="ecg-container">
+        <svg class="ecg-svg" viewBox="0 0 400 40" preserveAspectRatio="none" height="40">
+          <path d="M0,20 L40,20 L50,5 L60,35 L70,5 L80,20 L120,20 L130,5 L140,35 L150,5 L160,20 L200,20 L210,5 L220,35 L230,5 L240,20 L280,20 L290,5 L300,35 L310,5 L320,20 L360,20 L370,5 L380,35 L390,5 L400,20"
+                fill="none" stroke="#ff3366" stroke-width="1.5" opacity="0.8"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Health Score -->
+    <div class="score-section">
+      <div class="score-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="6"/>
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#00e5ff" stroke-width="6"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"
+            stroke-linecap="round" id="score-arc" style="transition:stroke-dashoffset 1s ease"/>
+        </svg>
+        <div class="score-text">
+          <div class="score-num" id="score-num">--</div>
+          <div class="score-lbl">TODAY</div>
+        </div>
+      </div>
+      <div class="score-info">
+        <h3>Health Score</h3>
+        <p id="score-desc" style="font-size:12px;color:var(--text-mid)">Submit a check-in to see your daily score</p>
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <span style="font-size:11px;font-family:var(--mono)">W: <span id="score-weekly" class="text-cyan">--</span></span>
+          <span style="font-size:11px;font-family:var(--mono)">M: <span id="score-monthly" class="text-cyan">--</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trend Chart -->
+    <div class="chart-area">
+      <div class="section-hdr" style="padding:0 0 10px">
+        <h3>7-Day Trend</h3>
+        <a href="#" onclick="loadVitalStats(14)">14d</a>
+      </div>
+      <div class="chart-container">
+        <canvas id="trend-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-hdr">
+      <h3>Quick Actions</h3>
+    </div>
+    <div class="quick-actions">
+      <div class="action-card" onclick="openCheckinModal()">
+        <span class="icon">📋</span>
+        <span class="title">Daily Check-in</span>
+        <span class="desc">8 PM health review</span>
+      </div>
+      <div class="action-card" onclick="openAIPrescription()">
+        <span class="icon">💊</span>
+        <span class="title">AI Prescription</span>
+        <span class="desc">Minor ailments</span>
+      </div>
+      <div class="action-card" onclick="navigate('hospital')">
+        <span class="icon">🏥</span>
+        <span class="title">Find Hospital</span>
+        <span class="desc">Book & emergency</span>
+      </div>
+      <div class="action-card" onclick="navigate('pharmacy')">
+        <span class="icon">🩸</span>
+        <span class="title">Blood & Meds</span>
+        <span class="desc">Search availability</span>
+      </div>
+    </div>
+
+    <!-- Manual Vitals Entry -->
+    <div class="section-hdr" style="margin-top:8px">
+      <h3>Manual Entry</h3>
+      <a href="#" onclick="submitDemoVitals()">Demo Data</a>
+    </div>
+    <div style="padding:0 20px 20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <input type="number" id="m-hr" placeholder="Heart Rate (BPM)" class="form-group input" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:13px;outline:none;font-family:var(--display)">
+        <input type="number" id="m-spo2" placeholder="SpO2 (%)" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:13px;outline:none;font-family:var(--display)">
+        <input type="number" id="m-temp" placeholder="Temp (°C)" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:13px;outline:none;font-family:var(--display)">
+        <input type="number" id="m-bp" placeholder="Sys BP (mmHg)" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:13px;outline:none;font-family:var(--display)">
+      </div>
+      <button class="btn btn-primary btn-block btn-sm" onclick="submitManualVitals()">Submit Vitals</button>
+    </div>
+  </div>
+
+  <!-- ═══ ALERTS PAGE ═════════════════════════════════════════ -->
+  <div class="page" id="page-alerts">
+    <div class="section-hdr" style="padding-bottom:16px">
+      <h3>Health Alerts</h3>
+      <a href="#" onclick="loadAlerts()">Refresh</a>
+    </div>
+    <div id="alerts-list">
+      <div class="center"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ HOSPITAL PAGE ════════════════════════════════════════ -->
+  <div class="page" id="page-hospital">
+    <div class="search-bar">
+      <input type="text" id="hospital-search" placeholder="Search by city..." />
+      <button class="btn btn-primary btn-sm" onclick="searchHospitals()">Search</button>
+    </div>
+    <div id="hospital-list">
+      <div class="center"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ HOSPITAL DETAIL MODAL ════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-hospital">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3 id="hospital-modal-name">Hospital</h3>
+        <button class="modal-close" onclick="closeModal('modal-hospital')">✕</button>
+      </div>
+      <div id="hospital-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PHARMACY PAGE ════════════════════════════════════════ -->
+  <div class="page" id="page-pharmacy">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-medicine')">💊 Medicine</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-blood')">🩸 Blood</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-pharmacies')">🏪 Pharmacies</button>
+    </div>
+
+    <!-- Medicine Tab -->
+    <div class="tab-content active" id="tab-medicine">
+      <div class="search-bar">
+        <input type="text" id="med-search" placeholder="Search medicine..." />
+        <button class="btn btn-primary btn-sm" onclick="searchMedicine()">Search</button>
+      </div>
+      <div id="medicine-results"></div>
+    </div>
+
+    <!-- Blood Tab -->
+    <div class="tab-content" id="tab-blood">
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px;font-family:var(--mono)">SELECT BLOOD GROUP</p>
+      <div class="blood-grid" id="blood-grid">
+        <!-- Populated by JS -->
+      </div>
+      <div id="blood-results"></div>
+    </div>
+
+    <!-- Pharmacies Tab -->
+    <div class="tab-content" id="tab-pharmacies">
+      <div class="search-bar">
+        <input type="text" id="pharm-city" placeholder="Search by city..." />
+        <button class="btn btn-primary btn-sm" onclick="searchPharmacies()">Search</button>
+      </div>
+      <div id="pharmacy-list-results"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PROFILE PAGE ════════════════════════════════════════ -->
+  <div class="page" id="page-profile">
+    <div class="profile-hdr">
+      <div class="profile-avatar">👤</div>
+      <div>
+        <div class="profile-name" id="pf-name">Loading...</div>
+        <div class="profile-email" id="pf-email"></div>
+        <div class="profile-role" id="pf-role">PATIENT</div>
+      </div>
+    </div>
+
+    <!-- Patient-specific sections -->
+    <div id="patient-sections">
+      <div class="settings-section">
+        <h4>Health Profile</h4>
+        <div class="settings-item" onclick="openProfileEdit()">
+          <div class="settings-item-left">
+            <span class="settings-item-icon">📋</span>
+            <div>
+              <div class="settings-item-title">Medical Profile</div>
+              <div class="settings-item-desc">Update health details</div>
+            </div>
+          </div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="openFamilyManager()">
+          <div class="settings-item-left">
+            <span class="settings-item-icon">👨‍👩‍👧</span>
+            <div>
+              <div class="settings-item-title">Family Connections</div>
+              <div class="settings-item-desc">Emergency contacts</div>
+            </div>
+          </div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="openDigitalRecords()">
+          <div class="settings-item-left">
+            <span class="settings-item-icon">📄</span>
+            <div>
+              <div class="settings-item-title">Digital Records</div>
+              <div class="settings-item-desc">Prescriptions & reports</div>
+            </div>
+          </div>
+          <span class="settings-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hospital-specific sections -->
+    <div id="hospital-sections" style="display:none">
+      <div class="settings-section">
+        <h4>Hospital Management</h4>
+        <div class="settings-item" onclick="openHospitalMgmt()">
+          <div class="settings-item-left">
+            <span class="settings-item-icon">🏥</span>
+            <div>
+              <div class="settings-item-title">Update Bed Availability</div>
+              <div class="settings-item-desc">Manage rooms & pricing</div>
+            </div>
+          </div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="openIncomingBookings()">
+          <div class="settings-item-left">
+            <span class="settings-item-icon">📅</span>
+            <div>
+              <div class="settings-item-title">Incoming Bookings</div>
+              <div class="settings-item-desc">Manage patient bookings</div>
+            </div>
+          </div>
+          <span class="settings-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pharmacy-specific sections -->
+    <div id="pharmacy-sections" style="display:none">
+      <div class="settings-section">
+        <h4>Inventory Management</h4>
+        <div class="settings-item" onclick="openPharmacyMgmt()">
+          <div class="settings-item-left">
+            <span class="settings-item-icon">💊</span>
+            <div>
+              <div class="settings-item-title">Manage Inventory</div>
+              <div class="settings-item-desc">Medicine & blood stock</div>
+            </div>
+          </div>
+          <span class="settings-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>App</h4>
+      <div class="settings-item" id="install-btn" style="display:none" onclick="installPWA()">
+        <div class="settings-item-left">
+          <span class="settings-item-icon">📱</span>
+          <div>
+            <div class="settings-item-title">Install App</div>
+            <div class="settings-item-desc">Add to home screen</div>
+          </div>
+        </div>
+        <span class="settings-arrow">›</span>
+      </div>
+      <div class="settings-item" onclick="doLogout()">
+        <div class="settings-item-left">
+          <span class="settings-item-icon">🚪</span>
+          <div><div class="settings-item-title" style="color:var(--red)">Sign Out</div></div>
+        </div>
+        <span class="settings-arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BOTTOM NAV ════════════════════════════════════════════ -->
+  <nav id="bottomnav">
+    <button class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+      <span class="nav-icon">❤️</span>
+      <span class="nav-label">Vitals</span>
+    </button>
+    <button class="nav-item" onclick="navigate('alerts')" id="nav-alerts">
+      <span class="nav-icon">🔔</span>
+      <span class="nav-label">Alerts</span>
+      <span class="nav-dot" id="nav-dot-alerts"></span>
+    </button>
+    <button class="nav-item" onclick="navigate('hospital')" id="nav-hospital">
+      <span class="nav-icon">🏥</span>
+      <span class="nav-label">Hospital</span>
+    </button>
+    <button class="nav-item" onclick="navigate('pharmacy')" id="nav-pharmacy">
+      <span class="nav-icon">💊</span>
+      <span class="nav-label">Pharmacy</span>
+    </button>
+    <button class="nav-item" onclick="navigate('profile')" id="nav-profile">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
+  <!-- ═══ CHECK-IN MODAL ════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-checkin">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>Daily Check-in 🩺</h3>
+        <button class="modal-close" onclick="closeModal('modal-checkin')">✕</button>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">Tell me about your day and I'll analyze your health</p>
+      <div id="checkin-questions"></div>
+      <button class="btn btn-primary btn-block" onclick="submitCheckin()" id="checkin-submit-btn">Analyze My Health</button>
+      <div id="checkin-result" style="margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- ═══ AI PRESCRIPTION MODAL ════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-rx">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>AI Health Advisor 💊</h3>
+        <button class="modal-close" onclick="closeModal('modal-rx')">✕</button>
+      </div>
+      <div class="rx-warning">
+        ⚠️ AI recommendations are for minor ailments only and do NOT replace professional medical advice.
+      </div>
+      <div class="checkin-q">
+        <label>Describe your symptoms</label>
+        <textarea id="rx-symptoms" placeholder="e.g. mild headache for 2 hours, slight fever, runny nose..." rows="3"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="submitRxRequest()" id="rx-btn">Get AI Advice</button>
+      <div id="rx-result" style="margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- ═══ FAMILY MODAL ═════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-family">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>Family Connections 👨‍👩‍👧</h3>
+        <button class="modal-close" onclick="closeModal('modal-family')">✕</button>
+      </div>
+      <div id="family-list" style="margin-bottom:16px"></div>
+      <h4 style="font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-bottom:12px">ADD MEMBER</h4>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input type="text" id="fam-name" placeholder="Full Name" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;outline:none;font-family:var(--display)">
+        <input type="tel" id="fam-phone" placeholder="Phone number" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;outline:none;font-family:var(--display)">
+        <select id="fam-rel" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:14px;outline:none;font-family:var(--display)">
+          <option value="spouse">Spouse</option>
+          <option value="parent">Parent</option>
+          <option value="child">Child</option>
+          <option value="sibling">Sibling</option>
+          <option value="other">Other</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="addFamilyMember()">Add Member</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DIGITAL RECORDS MODAL ════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-records">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>Digital Records 📄</h3>
+        <button class="modal-close" onclick="closeModal('modal-records')">✕</button>
+      </div>
+      <div id="records-content"></div>
+    </div>
+  </div>
+
+  <!-- ═══ HOSPITAL MANAGEMENT MODAL ══════════════════════════ -->
+  <div class="modal-backdrop" id="modal-hospital-mgmt">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>Hospital Dashboard</h3>
+        <button class="modal-close" onclick="closeModal('modal-hospital-mgmt')">✕</button>
+      </div>
+      <div id="hospital-mgmt-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ BOOKINGS MODAL ═══════════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-bookings">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>Incoming Bookings</h3>
+        <button class="modal-close" onclick="closeModal('modal-bookings')">✕</button>
+      </div>
+      <div id="bookings-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PHARMACY MGMT MODAL ══════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-pharmacy-mgmt">
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>Inventory Management</h3>
+        <button class="modal-close" onclick="closeModal('modal-pharmacy-mgmt')">✕</button>
+      </div>
+      <div id="pharmacy-mgmt-body"></div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script type="module" src="src/app.js"></script>
+</body>
+</html>

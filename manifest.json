@@ -1,0 +1,38 @@
+{
+  "name": "VitalSync — Health Monitor",
+  "short_name": "VitalSync",
+  "description": "AI-powered IoT health monitoring platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050d1a",
+  "theme_color": "#00e5ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Check Vitals",
+      "url": "/?page=dashboard",
+      "description": "View your live vitals"
+    },
+    {
+      "name": "Find Hospital",
+      "url": "/?page=hospital",
+      "description": "Find nearby hospitals"
+    }
+  ]
+}
